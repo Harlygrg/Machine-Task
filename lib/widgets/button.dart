@@ -6,23 +6,29 @@ import 'package:machine_task/Controllers/home_controller.dart';
 
 HomeController getController = Get.find();
 
-elevatedButton(){
-  return  SizedBox(
+elevatedButton() {
+  return SizedBox(
     width: 300.w,
     child: ElevatedButton(
-      onPressed: (){
-         getController.searchedValue = getController.serchController.text;
-        // getController.api_manager(searchKey: getController.searchedValue);
+      onPressed: () {
+        getController.isloading = true;
+        getController.searchedValue = getController.serchController.text;
+        getController.apidatas();
+        getController.isloading = false;
         getController.update();
-      }, child: Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Text("Search Image",style: TextStyle(fontSize: 15.sp,color: Colors.black),),
-    ),
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Text(
+          "Search Image",
+          style: TextStyle(fontSize: 15.sp, color: Colors.black),
+        ),
+      ),
       style: ElevatedButton.styleFrom(
           primary: Colors.blue[200],
           elevation: 10,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
     ),
   );
 }

@@ -1,60 +1,71 @@
-
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:machine_task/Controllers/home_controller.dart';
-import 'package:machine_task/api_model/api_model.dart';
-import 'package:http/http.dart' as http;
 
 HomeController controller = Get.find();
-class API_Manager{
 
-  String ?onSearched;
+class API_Manager extends GetxController {
+
+  String? onSearched;
   API_Manager(this.onSearched);
 
-  apiString(){
-    print("=============oooo--$onSearched");
-    String searchString = "https://pixabay.com/api/?key=25663025-e3c8d1d46053c03960e98079e&q=$onSearched&image_type=photo";
-    print(searchString);
+  apiString() {
+    String searchString =
+        "https://pixabay.com/api/?key=25663025-e3c8d1d46053c03960e98079e&q=$onSearched&image_type=photo";
     return searchString;
   }
-  Future<ImageDisplayModel?> searchFinder()async{
-    print("======****=======$onSearched");
-    print("=============future working");
-    var apiResponse = await http.get(Uri.parse(apiString()));
-    print("=============RESPONSE WORKING");
 
-      if(apiResponse.statusCode==200){
-        print("***************** SUCCESS RESPONSE");
-        var responseBody = apiResponse.body;
-        final value = jsonDecode(responseBody);
-        var result = ImageDisplayModel.fromJson(value);
-        return result;
+  final dio = Dio();
+
+  getData() async {
+
+
+    try {
+      final response = await dio.get(apiString());
+
+      switch (response.statusCode) {
+        case 200:
+      List lst = [];
+          for (int i = 0; i < response.data["hits"].length; i++) {
+            lst.add(response.data["hits"][i]);
+          }
+
+          controller.datas.clear();
+          controller.datas.addAll(lst);
+          controller.showdataFn();
+          controller.update();
+          break;
+          case 429 :
+            Get.snackbar("Limit exceeded  ", "",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.lightBlue);
+          break;
+        default:
+          Get.snackbar("Something went wrong ", "",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.lightBlue);
       }
-    else{
-      print("***************** Failed to load movies image");
-      throw Exception("Failed to load movies image");
+    // }on SocketException catch (e){
+    //   Get.snackbar("Something went wrong  ", "Check Internet connection",
+    //       snackPosition: SnackPosition.BOTTOM,
+    //       backgroundColor: Colors.lightBlue[200]);
+    // }on HttpException catch (e){
+    //   Get.snackbar("Network error ", "Please try after some time.",
+    //       snackPosition: SnackPosition.BOTTOM,
+    //       backgroundColor: Colors.lightBlue[200]);
+    //
     }
+    on DioError catch(e){
+      print("-------------${e.response}");
+      Get.snackbar("Please check your internet connection ", "",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.lightBlue[200]);
     }
 
-  }
-Future<ImageDisplayModel?> searchFinder()async{
-  //print("======****=======$onSearched");
-  print("=============future working");
-  var apiResponse = await http.get(Uri.parse("https://pixabay.com/api/?key=25663025-e3c8d1d46053c03960e98079e&q=book&image_type=photo"));
-  print("=============RESPONSE WORKING");
-
-  if(apiResponse.statusCode==200){
-    print("***************** SUCCESS RESPONSE");
-    var responseBody = apiResponse.body;
-    final value = jsonDecode(responseBody);
-    var result = ImageDisplayModel.fromJson(value);
-    return result;
-  }
-  else{
-    print("***************** Failed to load movies image");
-    throw Exception("Failed to load movies image");
   }
 }
